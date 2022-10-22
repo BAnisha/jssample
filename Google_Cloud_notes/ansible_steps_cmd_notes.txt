@@ -1,0 +1,93 @@
+sudo su – ubuntu
+sudo apt update
+sudo apt install software-properties-common
+sudo apt-add-repository --yes --update ppa:ansible/ansible
+sudo apt install ansible
+ansible -–version
+
+generate ketys:
+ssh-keygen
+cat .ssh/id_rsa.pub
+
+Go to ansible slave as ubuntu user and to path -  /home/ubuntu/.ssh/authorized_keys
+
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDzCxp1crKmzwaXawUsxeEYPddXc10UXz581iJdeVWOIwaXw++Q3eKq3CA1CiZoLn1z44Czqkaqf6tKg/uv23BEud3SZWR3rNrwWvQeYm6mTlVys4XzxNjTZkyh8otqPbw7UUmH4e2/fvRiBTMo6D+xjFJWkIjY91vj7+bfpx2D0R/s3JTS/Xpv2mLvp2ULZoLrAcG4SqCBLSd86Pn2MAQgb5joAUcXqLIbU2g+WS917ZBjv8A1BJryxjDE+ELhbxUt1TviyVGcHkOUTNmK1x9zMwsr0CzBtY8meR8sNVy9LsyRwKbSdTi65PqQelaUsC+AfcpL6gXbwp7t7wKRDCKJ ubuntu@ansiblemaster
+
+get hostname of slave
+go back to master and run
+
+sudo vim /etc/ansible/hosts
+cat vim /etc/ansible/hosts| grep -v '#'
+//grep done to not show comment lines
+
+ansible -m ping ansibleslave
+ansible -m setup ansibleslave
+ansible -m command -a "hostname" ansibleslave
+
+Creating Playbook
+
+vim first_playbook.yaml
+
+---
+- hosts: ansibleslave
+  become: yes
+  name: Play 1
+  tasks:
+    - name: Execute "date" command
+      command: date
+    - name: Install nginx
+      apt: name=nginx state=latest
+
+cat first_playbook.yaml
+
+ansible-playbook first_playbook.yaml
+--check no failed tasks
+
+dpkg -l|grep nginx
+
+Create ansible role
+
+ansible-galaxy init first_role
+sudo apt install tree
+tree first_role
+
+vim first_role/tasks/main.yml
+
+//add the below tasks in this file:
+---
+# tasks file for first_role
+- include: install.yml
+
+cat first_role/tasks/main.yml
+vim first_role/tasks/install.yml
+
+//tasks in install file
+---
+- name: Execute command ‘Date’
+  command: date
+  register: date_output
+
+- name: Print date
+  debug:
+  msg:"{{date_output}}"
+
+- name: Install nginx
+  apt: name=nginx state=latest
+
+cat first_role/tasks/install.yml //verify
+
+//Create a master playbook
+
+vim roleplay.yaml
+
+---
+- hosts: ansibleslave
+  sudo: yes
+  roles:
+    - first_role
+
+ansible-playbook roleplay.yaml --syntax-check
+//fails cause of format in install file. it should have debug: msg="{{date_output}}"
+//when syntext is successful shows playbook: <playbook_name>.yaml
+ansible-playbook roleplay.yaml
+//ensure no failed tasks and verify output on slave

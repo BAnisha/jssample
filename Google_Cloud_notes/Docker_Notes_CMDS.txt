@@ -1,0 +1,38 @@
+sudo usermod -a -G docker $user
+sudo usermod -aG docker $user
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+$ sudo apt-get update
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+docker run -ti -d --name nynginx -p 80:80 nginx
+docker exec -ti nynginx bash
+apt-get update && apt-get install procps
+
+
+FROM ubuntu
+env TZ=Asia/Kolkata
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apt-get update
+RUN apt-get -y install apache2
+ADD . /var/www/html
+ENTRYPOINT apachect1 -D FOREGROUND
+ENV name Devops Tutorial
+
+docker exec -ti 1c009072abcf bash
+dpkg -l |grep apache
+docker build . -t ubuntu_apache1
+docker run –ti –name myapache –p 81:80 –d ubuntu_apache
+docker run –ti -d -–name myapache –p 81:80 –d ubuntu_apache
+
+docker run –ti –p 81:80 –d ubuntu_apache
+
+<html>
+<title> Welcome Website </title>
+<body> Hello World! <body>
+</html>
+
+//find error logs do docker log <container id>
